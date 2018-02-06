@@ -111,6 +111,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MathUtil.h" />
+    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="wd.h" />
+    <ClInclude Include="geometry.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MathUtil.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="wd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

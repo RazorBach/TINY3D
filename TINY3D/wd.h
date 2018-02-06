@@ -1,0 +1,27 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// Win32 窗口及图形绘制
+//
+/////////////////////////////////////////////////////////////////////////////
+#ifndef WD_H
+#define WD_H
+
+#include <windows.h>
+#include <tchar.h>
+
+// Check if MS Visual C compiler
+#ifdef _MSC_VER          
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "user32.lib")
+#endif
+
+typedef unsigned IUINT32;
+
+int screen_init(int w, int h, const TCHAR *title, WNDPROC screen_events);	// 屏幕初始化
+int screen_close();								// 关闭屏幕
+void screen_dispatch();							// 处理消息
+void screen_update();							// 显示 FrameBuffer
+
+void setPixel(int x, int y, IUINT32 color);
+
+#endif // !WD_H
