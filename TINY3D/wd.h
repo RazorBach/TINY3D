@@ -6,6 +6,7 @@
 #ifndef WD_H
 #define WD_H
 
+#define NOMINMAX
 #include <windows.h>
 #include <tchar.h>
 

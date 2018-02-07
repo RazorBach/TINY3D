@@ -5,6 +5,7 @@
 #include <math.h>
 
 class Vector3{
+private:
 public:
 	float x, y, z;
 	Vector3() {}

@@ -112,6 +112,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MathUtil.h" />
+    <ClInclude Include="model.h" />
+    <ClInclude Include="tgaimage.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="wd.h" />
     <ClInclude Include="geometry.h" />
@@ -119,6 +121,8 @@
   <ItemGroup>
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model.cpp" />
+    <ClCompile Include="tgaimage.cpp" />
     <ClCompile Include="wd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

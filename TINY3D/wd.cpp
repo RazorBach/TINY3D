@@ -36,7 +36,6 @@ int screen_init(int w, int h, const TCHAR *title, WNDPROC screen_events) {
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		0, 0, 0, 0, NULL, NULL, wc.hInstance, NULL);
 	if (screen_handle == NULL) return -2;
-
 	hDC = GetDC(screen_handle);
 	screen_dc = CreateCompatibleDC(hDC);
 	ReleaseDC(screen_handle, hDC);

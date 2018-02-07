@@ -5,6 +5,9 @@
 #include <cassert>
 #include <iostream>
 
+// 计算插值：t 为 [0, 1] 之间的数值
+template<class T> inline T interp(T x1, T x2, float t) { return x1 + (x2 - x1) * t; }
+
 //matrix 
 template<size_t DimCols, size_t DimRows, typename T> class mat;
 
@@ -23,6 +26,13 @@ template <typename T> struct vec<2, T> {
 	vec() : x(T()), y(T()) {}
 	vec(T X, T Y) : x(X), y(Y) {}
 	template <class U> vec<2, T>(const vec<2, U> &v);
+
+	vec<2,T>& operator +=(const vec<2, T> & rhs) { 
+		x += rhs[0]; 
+		y += rhs[1]; 
+		return *this;
+	}
+
 	T& operator[](const size_t i) { assert(i<2); return i <= 0 ? x : y; }
 	const T& operator[](const size_t i) const { assert(i<2); return i <= 0 ? x : y; }
 
@@ -44,6 +54,7 @@ template <typename T> struct vec<3, T> {
 };
 
 /////////////////////////////////////////////////////////////////////////////////
+
 
 template<size_t DIM, typename T> T operator*(const vec<DIM, T>& lhs, const vec<DIM, T>& rhs) {
 	T ret = T();
