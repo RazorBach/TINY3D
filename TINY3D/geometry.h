@@ -44,13 +44,66 @@ template <typename T> struct vec<2, T> {
 template <typename T> struct vec<3, T> {
 	vec() : x(T()), y(T()), z(T()) {}
 	vec(T X, T Y, T Z) : x(X), y(Y), z(Z) {}
-	template <class U> vec<3, T>(const vec<3, U> &v);
+	vec(const vec<4, T> &vec4) : x(vec4[0]), y(vec4[1]),z(vec4[2]){}
+
+	template <class U> vec<3, T>(const vec<3, U> &v) : x(v.x), y(v.y), z(v.z) {}
+	
+	//œÚ¡ø‘ÀÀ„
+	vec<3, T> operator - () const { return vec<3, T>(-x, -y, -z); }
+
 	T& operator[](const size_t i) { assert(i<3); return i <= 0 ? x : (1 == i ? y : z); }
 	const T& operator[](const size_t i) const { assert(i<3); return i <= 0 ? x : (1 == i ? y : z); }
 	float norm() { return std::sqrt(x*x + y*y + z*z); }
 	vec<3, T> & normalize(T l = 1) { *this = (*this)*(l / norm()); return *this; }
 
 	T x, y, z;
+};
+
+/////////////////////////////////////////////////////////////////////////////////
+template <typename T> struct vec<4, T> {
+	vec() : x(T()), y(T()), z(T()),w(T()) {}
+	vec(T X, T Y, T Z,T W) : x(X), y(Y), z(Z),w(W) {}
+
+	vec<4, T> operator- () const { return vec<4, T>(-x, -y, -z, -w); }
+
+	T& operator[](const size_t i) { 
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 3:
+			return w;
+		default:
+			assert(false);
+		}
+	}
+
+	const T& operator[](const size_t i) const {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 3:
+			return w;
+		default:
+			assert(false);
+		}
+	}
+
+	vec<3, T> tovec3() { 
+		assert(w != 0);
+		vec<3, T> ret = vec<3, T>(*this);
+		ret = ret / w;
+		return ret;
+	}
+
+	T x,y,z,w;
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +132,8 @@ template<size_t DIM, typename T, typename U> vec<DIM, T> operator*(vec<DIM, T> l
 }
 
 template<size_t DIM, typename T, typename U> vec<DIM, T> operator/(vec<DIM, T> lhs, const U& rhs) {
-	for (size_t i = DIM; i--; lhs[i] /= rhs);
+	U inv = 1 / rhs;
+	for (size_t i = DIM; i--; lhs[i] *= inv);
 	return lhs;
 }
 

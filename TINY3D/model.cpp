@@ -64,6 +64,11 @@ std::vector<int> Model::face(int idx) {
 	return face;
 }
 
+Vec3f Model::norm(int iface, int nvert) {
+	int idx = faces_[iface][nvert][2];
+	return norms_[idx].normalize();
+}
+
 Vec3f Model::vert(int i) {
 	return verts_[i];
 }
