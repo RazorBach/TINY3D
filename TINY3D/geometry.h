@@ -6,7 +6,7 @@
 #include <iostream>
 
 // 计算插值：t 为 [0, 1] 之间的数值
-template<class T> inline T interp(T x1, T x2, float t) { return x1 + (x2 - x1) * t; }
+template<class T, class U> inline T interp(T x1, T x2, U t) { return x1 + (x2 - x1) * t; }
 
 //matrix 
 template<size_t DimCols, size_t DimRows, typename T> class mat;
@@ -27,9 +27,9 @@ template <typename T> struct vec<2, T> {
 	vec(T X, T Y) : x(X), y(Y) {}
 	template <class U> vec<2, T>(const vec<2, U> &v);
 
-	vec<2,T>& operator +=(const vec<2, T> & rhs) { 
-		x += rhs[0]; 
-		y += rhs[1]; 
+	vec<2, T>& operator +=(const vec<2, T> & rhs) {
+		x += rhs[0];
+		y += rhs[1];
 		return *this;
 	}
 
@@ -44,10 +44,11 @@ template <typename T> struct vec<2, T> {
 template <typename T> struct vec<3, T> {
 	vec() : x(T()), y(T()), z(T()) {}
 	vec(T X, T Y, T Z) : x(X), y(Y), z(Z) {}
-	vec(const vec<4, T> &vec4) : x(vec4[0]), y(vec4[1]),z(vec4[2]){}
+	vec(const vec<4, T> &vec4) : x(vec4[0]), y(vec4[1]), z(vec4[2]) {}
 
-	template <class U> vec<3, T>(const vec<3, U> &v) : x(v.x), y(v.y), z(v.z) {}
-	
+	template <class U> vec<3, T>(const vec<3, U> &v);
+	//template <class U> vec<3, T> operator= (const vec<3, u> &v);
+
 	//向量运算
 	vec<3, T> operator - () const { return vec<3, T>(-x, -y, -z); }
 
@@ -61,12 +62,12 @@ template <typename T> struct vec<3, T> {
 
 /////////////////////////////////////////////////////////////////////////////////
 template <typename T> struct vec<4, T> {
-	vec() : x(T()), y(T()), z(T()),w(T()) {}
-	vec(T X, T Y, T Z,T W) : x(X), y(Y), z(Z),w(W) {}
+	vec() : x(T()), y(T()), z(T()), w(T()) {}
+	vec(T X, T Y, T Z, T W) : x(X), y(Y), z(Z), w(W) {}
 
 	vec<4, T> operator- () const { return vec<4, T>(-x, -y, -z, -w); }
 
-	T& operator[](const size_t i) { 
+	T& operator[](const size_t i) {
 		switch (i) {
 		case 0:
 			return x;
@@ -96,14 +97,14 @@ template <typename T> struct vec<4, T> {
 		}
 	}
 
-	vec<3, T> tovec3() { 
+	vec<3, T> tovec3() {
 		assert(w != 0);
 		vec<3, T> ret = vec<3, T>(*this);
 		ret = ret / w;
 		return ret;
 	}
 
-	T x,y,z,w;
+	T x, y, z, w;
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +155,7 @@ template <typename T> vec<3, T> cross(vec<3, T> v1, vec<3, T> v2) {
 }
 
 template <size_t DIM, typename T> std::ostream& operator<<(std::ostream& out, vec<DIM, T>& v) {
-	for (unsigned int i = 0; i<DIM; i++) {
+	for (unsigned int i = 0; i != DIM; i++) {
 		out << v[i] << " ";
 	}
 	return out;

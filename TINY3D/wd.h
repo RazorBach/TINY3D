@@ -9,6 +9,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <tchar.h>
+#include "device.h"
 
 // Check if MS Visual C compiler
 #ifdef _MSC_VER          
@@ -16,13 +17,14 @@
 #pragma comment(lib, "user32.lib")
 #endif
 
-typedef unsigned IUINT32;
 
 int screen_init(int w, int h, const TCHAR *title, WNDPROC screen_events);	// 屏幕初始化
 int screen_close();								// 关闭屏幕
 void screen_dispatch();							// 处理消息
 void screen_update();							// 显示 FrameBuffer
 
-void setPixel(int x, int y, IUINT32 color);
+void device_clear(int mwidth, int mheight, float* zbuffer);
+
+extern unsigned char *screen_fb;		// frame buffer
 
 #endif // !WD_H

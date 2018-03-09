@@ -111,17 +111,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="device.h" />
     <ClInclude Include="MathUtil.h" />
     <ClInclude Include="model.h" />
+    <ClInclude Include="my_gl.h" />
     <ClInclude Include="tgaimage.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="wd.h" />
     <ClInclude Include="geometry.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="geometry.cpp" />
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="my_gl.cpp" />
     <ClCompile Include="tgaimage.cpp" />
     <ClCompile Include="wd.cpp" />
   </ItemGroup>

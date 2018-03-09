@@ -10,7 +10,6 @@ static HWND screen_handle = NULL;		// 主窗口 HWND
 static HDC screen_dc = NULL;			// 配套的 HDC
 static HBITMAP screen_hb = NULL;		// DIB
 static HBITMAP screen_ob = NULL;		// 老的 BITMAP
-unsigned char *screen_fb = NULL;		// frame buffer
 IUINT32 **framebuffer;      // 像素缓存：framebuffer[y] 代表第 y行
 long screen_pitch = 0;
 
@@ -63,17 +62,6 @@ int screen_init(int w, int h, const TCHAR *title, WNDPROC screen_events) {
 
 	
 	memset(screen_fb, 0, w * h * 4);
-	//
-
-	int need = sizeof(void*) * (SCREEN_HEIGHT * 2 + 1024) + SCREEN_WIDTH * SCREEN_HEIGHT * 8;
-	char *c_ptr = (char*)malloc(need + 64);
-
-	//char *c_ptr = new char(sizeof(void*) * (SCREEN_HEIGHT * 2 + 1024) + SCREEN_WIDTH * SCREEN_HEIGHT * 8 + 64);
-	framebuffer = (IUINT32 **)c_ptr;
-	for (int j = 0; j < SCREEN_HEIGHT; j++) {
-		//flip the image to set the y axis up
-		framebuffer[j] = (IUINT32*)(screen_fb + SCREEN_WIDTH * 4 *(SCREEN_HEIGHT - j -1));
-	}
 
 	return 0;
 }
@@ -114,8 +102,6 @@ void screen_update() {
 	screen_dispatch();
 }
 
-void setPixel(int x, int y, IUINT32 color) {
-	if (((IUINT32)x) < (IUINT32) SCREEN_WIDTH && ((IUINT32)y) < (IUINT32)SCREEN_HEIGHT) {
-		framebuffer[y][x] = color;
-	}
-}
+
+
+
