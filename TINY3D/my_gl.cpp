@@ -42,25 +42,25 @@ IShader::~IShader()
 {
 }
 
-Vec3f barycentric(Vec3f *pts, Vec2i P) {
-	//p的重心坐标
-	Vec3f u = cross(Vec3f(pts[2][0] - pts[0][0], pts[1][0] - pts[0][0], pts[0][0] - P[0]), Vec3f(pts[2][1] - pts[0][1], pts[1][1] - pts[0][1], pts[0][1] - P[1]));
-	if (std::abs(u[2])> 1e-2) return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-	return Vec3f(-1, 1, 1);// simply return a negative coordinate
-}
-
-//Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2i P) {
-//	Vec3f s[2];
-//	for (int i = 2; i--; ) {
-//		s[i][0] = C[i] - A[i];
-//		s[i][1] = B[i] - A[i];
-//		s[i][2] = A[i] - P[i];
-//	}
-//	Vec3f u = cross(s[0], s[1]);
-//	if (std::abs(u[2])>1e-2) // dont forget that u[2] is integer. If it is zero then triangle ABC is degenerate
-//		return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-//	return Vec3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
+//Vec3f barycentric(Vec3f *pts, Vec2i P) {
+//	//p的重心坐标
+//	Vec3f u = cross(Vec3f(pts[2][0] - pts[0][0], pts[1][0] - pts[0][0], pts[0][0] - P[0]), Vec3f(pts[2][1] - pts[0][1], pts[1][1] - pts[0][1], pts[0][1] - P[1]));
+//	if (std::abs(u[2])> 1e-2) return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+//	return Vec3f(-1, 1, 1);// simply return a negative coordinate
 //}
+
+Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2i P) {
+	Vec3f s[2];
+	for (int i = 2; i--; ) {
+		s[i][0] = C[i] - A[i];
+		s[i][1] = B[i] - A[i];
+		s[i][2] = A[i] - P[i];
+	}
+	Vec3f u = cross(s[0], s[1]);
+	if (std::abs(u[2])> 1e-3) // dont forget that u[2] is integer. If it is zero then triangle ABC is degenerate
+		return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+	return Vec3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
+}
 
 //void triangle(Vec3f *pts, Vec2i *uv, float *zbuffer, float* intensity) {
 //	//重心坐标光栅化
@@ -106,31 +106,37 @@ Vec3f barycentric(Vec3f *pts, Vec2i P) {
 //	}
 //}
 
-void triangle(Device& device, Vec3f *pts, IShader &shader) {
+void triangle(Device& device, Vec4f *pts, IShader* shader) {
 	Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 	Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
-	Vec2f clamp(device.width - 1, device.width - 1);
+	Vec2f clamp(device.width - 1, device.height - 1);
 	for (int i = 0; i<3; i++) {
 		for (int j = 0; j<2; j++) {
-			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
-			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]/pts[i][3]));
+			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]/ pts[i][3]));
 		}
 	}
 	Vec2i bboxmini(bboxmin);
 	Vec2i bboxmaxi(bboxmax);
 	Vec2i P;
 	IUINT32 color;
-	for (P.x = bboxmini.x; P.x <= bboxmaxi.x; P.x++) {
-		for (P.y = bboxmini.y; P.y <= bboxmaxi.y; P.y++) {
-			Vec3f bc = barycentric(pts, P);
+	//注意步长
+	for (P.y = bboxmini.y; P.y <= bboxmaxi.y; P.y++) {
+		for (P.x = bboxmini.x; P.x <= bboxmaxi.x; P.x++) {
+			Vec3f bc = barycentric(proj<2>(pts[0] / pts[0][3]), proj<2>(pts[1] / pts[1][3]), proj<2>(pts[2] / pts[2][3]), proj<2>(P));
 			if (bc.x < 0 || bc.y < 0 || bc.z < 0) continue;
-			int frag_depth = pts[0][2] * bc.x + pts[0][1] * bc.y + pts[0][2] * bc.z ;
+			//先进行插值 再除w
+			float z = pts[0][2] * bc.x + pts[1][2] * bc.y + pts[2][2] * bc.z;
+			float w = pts[0][3] * bc.x + pts[1][3] * bc.y + pts[2][3] * bc.z;
+			float frag_depth = z / w;
+			//通过zbuffer测试
 			if (device.zbuffer[P.y][P.x] < frag_depth) {
 				device.zbuffer[P.y][P.x] = frag_depth;
-				bool discard = shader.fragment(bc, color);
+				bool discard = shader->fragment(bc, color);
 				if (!discard) {
 					//printf("%d,%d,%d \n", P.x, P.y, color);
 					device.device_pixel(P.x, P.y, color);
+					//device.framebuffer[P.y][P.x] = color;
 				}
 			}
 		}

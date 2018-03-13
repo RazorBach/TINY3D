@@ -8,6 +8,7 @@
 // Include C++ headers 
 #include <algorithm> 
 #include <limits>
+#include <memory>
 #include <cstdlib>
 using namespace std;
 
@@ -22,10 +23,10 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up);
 
 struct IShader {
 	virtual ~IShader();
-	virtual Vec3f vertex(int iface, int nthvert) = 0;
+	virtual Vec4f vertex(int iface, int nthvert) = 0;
 	virtual bool fragment(Vec3f bar, IUINT32 &color) = 0;
 };
 
 const IUINT32 _color(int r, int g, int b);
-void triangle(Device& device, Vec3f *pts, IShader &shader);
+void triangle(Device& device, Vec4f *pts, IShader *shader);
 #endif // !MY_GL_H

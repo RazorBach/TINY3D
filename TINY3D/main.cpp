@@ -12,7 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include "MathUtil.h"
+#include <memory>
 #include "geometry.h"
 #include "model.h"
 #include "my_gl.h"
@@ -25,13 +25,8 @@ static LRESULT screen_events(HWND, UINT, WPARAM, LPARAM);
 const IUINT32 white = 0xFFFFFF, black = 0, red = 0xFF0000, green = 0x00FF00, blue =0x0000FF;
 unsigned char *screen_fb = NULL;
 
-
-//
-Model *model = NULL;
-
-
-Vec3f light_dir = Vec3f(1, -1, 1).normalize();
-Vec3f eye(1, 1, 3);
+Vec3f light_dir = Vec3f(1, 1, 1).normalize();
+Vec3f eye(1, 1,3);
 Vec3f center(0, 0, 0);
 Vec3f up(0, 1, 0);
 
@@ -70,20 +65,34 @@ void line(Device& device,float x1, float y1, float x2, float y2, const IUINT32 c
 }
 
 struct GouraudShader : public IShader {
-	Vec3f varying_intensity; // written by vertex shader, read by fragment shader
+	//Vec3f varying_intensity; //Gourand光照实现
+	mat<2, 3, float> varying_uv; // texture
+	mat<4, 4, float> uniform_Mat;// Projection*ModelView
+	mat<4, 4, float> uniform_MatIV;// (Projection*ModelView).invert_transpose
 
-	virtual Vec3f vertex(int iface, int nthvert) {
+	GouraudShader(std::shared_ptr<Model> m):model(m) {};
+
+	virtual Vec4f vertex(int iface, int nthvert) {
+		varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+		//varying_intensity[nthvert] = std::max(0.f, model->norm(iface, nthvert)*light_dir); // get diffuse lighting intensity
 		Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
         gl_Vertex = Viewport*Projection*ModelView*gl_Vertex;     // transform it to screen coordinates
-        varying_intensity[nthvert] = std::max(0.f, model->norm(iface, nthvert)*light_dir); // get diffuse lighting intensity
-        return gl_Vertex.tovec3();
+        return gl_Vertex;
 	}
 
 	virtual bool fragment(Vec3f bar, IUINT32 &color) {
-		float intensity = varying_intensity*bar;   // interpolate intensity for the current pixel
-		color = _color(255 * intensity, 255 * intensity, 255 * intensity);
-		return false;                              // do NOT discard this pixel
+		Vec2f uv = varying_uv * bar; // interpolate uv for the current pixel
+		Vec3f n = proj<3>(uniform_MatIV*embed<4>(model->normal(uv))).normalize();
+		Vec3f l = proj<3>(uniform_Mat  *embed<4>(light_dir)).normalize();
+		Vec3f r = (n * (n * l * 2.f) - l).normalize(); //反射光
+		float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
+		float diff = std::max(0.f,  n * l);
+		TGAColor tc = model->diffuse(uv);
+		color = _color(std::min<float>(5 + tc[2] * (diff + .6*spec), 255), std::min<float>(5 + tc[1] * (diff + .6*spec), 255), std::min<float>(5 + tc[0] * (diff + .6*spec), 255));
+		return false;                              
 	}
+private:
+	std::shared_ptr<Model> model;
 };
 //void drawModel() {
 //	Matrix ModelView = lookat(eye, center, up);
@@ -123,22 +132,20 @@ struct GouraudShader : public IShader {
 //	}
 //}
 
-void drawModelWithShader(Device& device) {
+void drawModelWithShader(std::shared_ptr<Model> model,Device& device) {
 	lookat(eye, center, up);
 	viewport(screen_width / 8, screen_height / 8, screen_width * 3 / 4, screen_height * 3 / 4);
 	projection(-1.f / (eye - center).norm());
-	light_dir.normalize();
 
-	//TGAImage image(width, height, TGAImage::RGB);
-	//TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
-
-	GouraudShader shader;
-	for (int i = 0; i<model->nfaces(); i++) {
-		Vec3f screen_coords[3];
+	std::shared_ptr<GouraudShader> shader = make_shared<GouraudShader>(model);
+	shader->uniform_Mat = Projection * ModelView;
+	shader->uniform_MatIV = (Projection*ModelView).invert_transpose();
+	for (int i = 0; i< model->nfaces(); i++) {
+		Vec4f screen_coords[3];
 		for (int j = 0; j<3; j++) {
-			screen_coords[j] = shader.vertex(i, j);
+			screen_coords[j] = shader->vertex(i, j);
 		}
-		triangle(device, screen_coords, shader);
+		triangle(device, screen_coords, shader.get());
 	}
 }
 
@@ -147,10 +154,10 @@ int main(int argc, char **argv) {
 	TCHAR *title = _T("TINY3D_BY_CH_VERSION_1.0 ");
 	memset(screen_keys, 0, sizeof(screen_keys));
 
-	
-	model = new Model("obj/african_head.obj");
-	
-	
+	//利用shared_ptr管理资源
+	std::shared_ptr<Model> model = std::make_shared<Model>("obj/african_head/african_head.obj");
+	//std::shared_ptr<Model> model(new Model("obj/african_head.obj"));
+
 	if (screen_init(screen_width, screen_height, title, (WNDPROC)screen_events))
 		return -1;
 	Device device(screen_width, screen_height, screen_fb);
@@ -171,10 +178,9 @@ int main(int argc, char **argv) {
 		if (screen_keys[VK_SPACE]) {
 		}
 		//line(device, 0.f, 0.f, 500.f, 500.f, red);
-		drawModelWithShader(device);
+		drawModelWithShader(model, device);
 		screen_update();
 	}
-	delete model;
 	return 0;
 }
 

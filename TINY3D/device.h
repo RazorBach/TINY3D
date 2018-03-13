@@ -60,7 +60,7 @@ struct Device {
 	// »­µã
 	void device_pixel(int x, int y, IUINT32 color) {
 		if (((IUINT32)x) < (IUINT32)width && ((IUINT32)y) < (IUINT32)height) {
-			framebuffer[y][x] = color;
+			this->framebuffer[y][x] = color;
 		}
 	}
 
