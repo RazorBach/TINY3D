@@ -25,10 +25,10 @@ static LRESULT screen_events(HWND, UINT, WPARAM, LPARAM);
 const IUINT32 white = 0xFFFFFF, black = 0, red = 0xFF0000, green = 0x00FF00, blue =0x0000FF;
 unsigned char *screen_fb = NULL;
 
-Vec3f light_dir = Vec3f(1, 1, 1).normalize();
-Vec3f eye(1, 1,3);
+Vec3f light_dir = Vec3f(1.f, 1.f, 1.f).normalize();
+Vec3f eye(1.f, 1.f, 3.f);
 Vec3f center(0, 0, 0);
-Vec3f up(0, 1, 0);
+Vec3f up(0, 1.f, 0);
 
 // Bresenham's line algorithm
 // https://zh.wikipedia.org/wiki/%E5%B8%83%E9%9B%B7%E6%A3%AE%E6%BC%A2%E5%A7%86%E7%9B%B4%E7%B7%9A%E6%BC%94%E7%AE%97%E6%B3%95
@@ -134,8 +134,9 @@ private:
 
 void drawModelWithShader(std::shared_ptr<Model> model,Device& device) {
 	lookat(eye, center, up);
-	viewport(screen_width / 8, screen_height / 8, screen_width * 3 / 4, screen_height * 3 / 4);
+	//projection(45.f, (float)screen_width / (float)screen_height, 0.1f, 50.f);
 	projection(-1.f / (eye - center).norm());
+	viewport(screen_width / 8, screen_height / 8, screen_width * 3 / 4, screen_height * 3 / 4);
 
 	std::shared_ptr<GouraudShader> shader = make_shared<GouraudShader>(model);
 	shader->uniform_Mat = Projection * ModelView;
@@ -145,7 +146,7 @@ void drawModelWithShader(std::shared_ptr<Model> model,Device& device) {
 		for (int j = 0; j<3; j++) {
 			screen_coords[j] = shader->vertex(i, j);
 		}
-		triangle(device, screen_coords, shader.get());
+		triangle(device, screen_coords, shader);
 	}
 }
 

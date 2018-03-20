@@ -87,6 +87,16 @@ struct Device {
 		zbuffer = NULL;
 		texture = NULL;
 	}
+	int getWidth() const {
+		return width;
+	}
+	int getHeight() const {
+		return width;
+	}
+	float& getZbuffer(int x, int y) const{
+		return zbuffer[y][x];
+	}
+private:
 	int width;                  // 窗口宽度
 	int height;                 // 窗口高度
 	IUINT32 **framebuffer;      // 像素缓存：framebuffer[y] 代表第 y行
@@ -99,7 +109,6 @@ struct Device {
 	int render_state;           // 渲染状态
 	IUINT32 background;         // 背景颜色
 	IUINT32 foreground;         // 线框颜色
-private:
 	Device(const Device&);
 	Device& operator=(const Device&);
 };

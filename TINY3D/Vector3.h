@@ -3,12 +3,14 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 #include <math.h>
+#include<set>
+#include<list>
 
 class Vector3{
-private:
 public:
 	float x, y, z;
-	Vector3() {}
+	Vector3() {
+	}
 	
 	Vector3(const Vector3 &v) : x(v.x), y(v.y), z(v.z) {}
 	

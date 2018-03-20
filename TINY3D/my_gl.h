@@ -19,6 +19,7 @@ extern Matrix Projection;
 
 void viewport(int x, int y, int w, int h);
 void projection(float coeff = 0.f); // coeff = -1/c
+void projection(float fovy, float aspect, float near_z, float far_z);
 void lookat(Vec3f eye, Vec3f center, Vec3f up);
 
 struct IShader {
@@ -28,5 +29,5 @@ struct IShader {
 };
 
 const IUINT32 _color(int r, int g, int b);
-void triangle(Device& device, Vec4f *pts, IShader *shader);
+void triangle(Device& device, Vec4f *pts, std::shared_ptr<IShader> shader);
 #endif // !MY_GL_H
