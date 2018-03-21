@@ -18,32 +18,26 @@
     <ClInclude Include="Vector3.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="wd.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="model.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="tgaimage.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="my_gl.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gl_stuff.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MathUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -53,13 +47,13 @@
     <ClCompile Include="model.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="tgaimage.cpp">
+    <ClCompile Include="image.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="geometry.cpp">
+    <ClCompile Include="math.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="my_gl.cpp">
+    <ClCompile Include="gl_stuff.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,9 +13,8 @@
 #include <algorithm>
 #include <string>
 #include <memory>
-#include "geometry.h"
 #include "model.h"
-#include "my_gl.h"
+#include "gl_stuff.h"
 
 int screen_keys[512];	// 当前键盘按下状态
 int SCREEN_EXIT = 0;
@@ -65,88 +64,68 @@ void line(Device& device,float x1, float y1, float x2, float y2, const IUINT32 c
 }
 
 struct GouraudShader : public IShader {
-	//Vec3f varying_intensity; //Gourand光照实现
-	mat<2, 3, float> varying_uv; // texture
-	mat<4, 4, float> uniform_Mat;// Projection*ModelView
-	mat<4, 4, float> uniform_MatIV;// (Projection*ModelView).invert_transpose
+	mat<2,3,float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
+	mat<4, 3, float> varying_tri; // triangle coordinates (clip coordinates), written by VS, read by FS
+	mat<3, 3, float> varying_nrm; // normal per vertex to be interpolated by FS
+	mat<3, 3, float> ndc_tri;     // triangle in normalized device coordinates
 
 	GouraudShader(std::shared_ptr<Model> m):model(m) {};
 
 	virtual Vec4f vertex(int iface, int nthvert) {
 		varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+		varying_nrm.set_col(nthvert, proj<3>((Projection*ModelView).invert_transpose()*embed<4>(model->norm(iface, nthvert), 0.f)));
+
 		//varying_intensity[nthvert] = std::max(0.f, model->norm(iface, nthvert)*light_dir); // get diffuse lighting intensity
 		Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
-        gl_Vertex = Viewport*Projection*ModelView*gl_Vertex;     // transform it to screen coordinates
+        gl_Vertex = Projection*ModelView*gl_Vertex;    
+		varying_tri.set_col(nthvert, gl_Vertex);
+		ndc_tri.set_col(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
         return gl_Vertex;
 	}
 
 	virtual bool fragment(Vec3f bar, IUINT32 &color) {
-		Vec2f uv = varying_uv * bar; // interpolate uv for the current pixel
-		Vec3f n = proj<3>(uniform_MatIV*embed<4>(model->normal(uv))).normalize();
-		Vec3f l = proj<3>(uniform_Mat  *embed<4>(light_dir)).normalize();
-		Vec3f r = (n * (n * l * 2.f) - l).normalize(); //反射光
-		float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
-		float diff = std::max(0.f,  n * l);
-		TGAColor tc = model->diffuse(uv);
-		color = _color(std::min<float>(5 + tc[2] * (diff + .6*spec), 255), std::min<float>(5 + tc[1] * (diff + .6*spec), 255), std::min<float>(5 + tc[0] * (diff + .6*spec), 255));
-		return false;                              
+		Vec3f bn = (varying_nrm*bar).normalize();
+		Vec2f uv = varying_uv*bar;
+
+		mat<3, 3, float> A;
+		A[0] = ndc_tri.col(1) - ndc_tri.col(0);
+		A[1] = ndc_tri.col(2) - ndc_tri.col(0);
+		A[2] = bn;
+		mat<3, 3, float> AI = A.invert();
+
+		Vec3f i = AI * Vec3f(varying_uv[0][1] - varying_uv[0][0], varying_uv[0][2] - varying_uv[0][0], 0);
+		Vec3f j = AI * Vec3f(varying_uv[1][1] - varying_uv[1][0], varying_uv[1][2] - varying_uv[1][0], 0);
+
+		mat<3, 3, float> B;
+		B.set_col(0, i.normalize());
+		B.set_col(1, j.normalize());
+		B.set_col(2, bn);
+
+		Vec3f n = (B*model->normal(uv)).normalize();
+
+		float diff = std::max(0.f, n*light_dir);
+		color = (model->diffuse(uv)*diff).toColor32();
+		/*TGAColor tc = model->diffuse(uv)*diff;
+		color = _color(tc[2], tc[1], tc[0]);*/
+		return false;
 	}
 private:
 	std::shared_ptr<Model> model;
 };
-//void drawModel() {
-//	Matrix ModelView = lookat(eye, center, up);
-//	//todo projection矩阵更新
-//	//Matrix Projection = perspective(kPi / 6, screen_width / screen_height, 1.f, 100.f);
-//	Matrix Projection = Matrix::identity();
-//	Projection[3][2] = -1.f / (eye - center).norm();
-//	//Matrix ViewPort = viewport(screen_width / 8, screen_height / 8, screen_width * 3 / 4, screen_height * 3 / 4);
-//	Matrix ViewPort = viewport(0, 0, screen_width , screen_height );
-//	Matrix z = (ViewPort*Projection*ModelView);
-//	for (int i = 0; i<model->nfaces(); i++) {
-//		std::vector<int> face = model->face(i);
-//		//todo
-//		//Use int to represent screencoords
-//		Vec3f screen_coords[3];
-//		Vec3f world_coords[3];
-//		float intensity[3];
-//		for (int j = 0; j < 3; ++j) {
-//			world_coords[j] = model->vert(face[j]);
-//			Vec4f v(world_coords[j].x, world_coords[j].y, world_coords[j].z, 1);
-//			screen_coords[j] = (z * v).tovec3();
-//			intensity[j] = model->norm(i,j) * light_dir;
-//		} 
-//		//背面剔除
-//		Vec3f n = cross((world_coords[2] - world_coords[0]) , (world_coords[1] - world_coords[0]));
-//		n.normalize();
-//		float intensity_ = n*light_dir;
-//		if (intensity < 0) 
-//			continue;
-//		//Gouraud shading
-//			//texture coordinates
-//		Vec2i uv[3];
-//		for (int k = 0; k<3; k++) {
-//			uv[k] = model->uv(i, k);
-//		}
-//		triangle2(screen_coords, uv, zbuffer, intensity);
-//	}
-//}
 
 void drawModelWithShader(std::shared_ptr<Model> model,Device& device) {
 	lookat(eye, center, up);
 	//projection(45.f, (float)screen_width / (float)screen_height, 0.1f, 50.f);
 	projection(-1.f / (eye - center).norm());
 	viewport(screen_width / 8, screen_height / 8, screen_width * 3 / 4, screen_height * 3 / 4);
+	light_dir = proj<3>((Projection*ModelView*embed<4>(light_dir, 0.f))).normalize();
 
 	std::shared_ptr<GouraudShader> shader = make_shared<GouraudShader>(model);
-	shader->uniform_Mat = Projection * ModelView;
-	shader->uniform_MatIV = (Projection*ModelView).invert_transpose();
 	for (int i = 0; i< model->nfaces(); i++) {
-		Vec4f screen_coords[3];
 		for (int j = 0; j<3; j++) {
-			screen_coords[j] = shader->vertex(i, j);
+			shader->vertex(i, j);
 		}
-		triangle(device, screen_coords, shader);
+		triangle(device, shader->varying_tri, shader);
 	}
 }
 
