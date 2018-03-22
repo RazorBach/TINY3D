@@ -14,7 +14,7 @@
 #include <string>
 #include <memory>
 #include "model.h"
-#include "gl_stuff.h"
+#include "gl_shader.h"
 
 int screen_keys[512];	// 当前键盘按下状态
 int SCREEN_EXIT = 0;
@@ -64,7 +64,7 @@ void line(Device& device,float x1, float y1, float x2, float y2, const IUINT32 c
 }
 
 struct GouraudShader : public IShader {
-	mat<2,3,float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
+	mat<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
 	mat<4, 3, float> varying_tri; // triangle coordinates (clip coordinates), written by VS, read by FS
 	mat<3, 3, float> varying_nrm; // normal per vertex to be interpolated by FS
 	mat<3, 3, float> ndc_tri;     // triangle in normalized device coordinates
@@ -144,6 +144,8 @@ int main(int argc, char **argv) {
 	int x = 0, y = 0;
 	//render function
 	while (SCREEN_EXIT == 0 && screen_keys[VK_ESCAPE] == 0) {
+		std::forward<Device>(device);
+		std::move(device);
 		screen_dispatch();
 		//todo 清空buffer
 		//device_clear(screen_width, screen_width, zbuffer);

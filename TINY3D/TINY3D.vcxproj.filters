@@ -33,7 +33,7 @@
     <ClInclude Include="math.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="gl_stuff.h">
+    <ClInclude Include="gl_shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="math.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="gl_stuff.cpp">
+    <ClCompile Include="gl_shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

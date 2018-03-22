@@ -23,7 +23,7 @@ void projection(float fovy, float aspect, float near_z, float far_z);
 void lookat(Vec3f eye, Vec3f center, Vec3f up);
 
 struct IShader {
-	virtual ~IShader();
+	virtual ~IShader() = 0;
 	virtual Vec4f vertex(int iface, int nthvert) = 0;
 	virtual bool fragment(Vec3f bar, IUINT32 &color) = 0;
 };

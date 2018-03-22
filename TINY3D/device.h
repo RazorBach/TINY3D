@@ -93,8 +93,12 @@ struct Device {
 	int getHeight() const {
 		return width;
 	}
-	float& getZbuffer(int x, int y) const{
+	float getZbuffer(int x, int y) const{
 		return zbuffer[y][x];
+	}
+
+	void setZbuffer(int x, int y, float z){
+		 zbuffer[y][x] = z;
 	}
 
 	Device(const Device&) = delete;

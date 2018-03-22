@@ -1,4 +1,4 @@
-﻿#include "gl_stuff.h"
+﻿#include "gl_shader.h"
 
 Matrix ModelView;
 Matrix Viewport;
@@ -63,7 +63,6 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up) {
 		ModelView[2][i] = z[i];
 		ModelView[i][3] = -center[i];
 	}
-
 }
 
 
@@ -71,12 +70,6 @@ IShader::~IShader()
 {
 }
 
-//Vec3f barycentric(Vec3f *pts, Vec2i P) {
-//	//p的重心坐标
-//	Vec3f u = cross(Vec3f(pts[2][0] - pts[0][0], pts[1][0] - pts[0][0], pts[0][0] - P[0]), Vec3f(pts[2][1] - pts[0][1], pts[1][1] - pts[0][1], pts[0][1] - P[1]));
-//	if (std::abs(u[2])> 1e-2) return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-//	return Vec3f(-1, 1, 1);// simply return a negative coordinate
-//}
 
 Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2i P) {
 	Vec3f s[2];
@@ -88,7 +81,7 @@ Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2i P) {
 	Vec3f u = cross(s[0], s[1]);
 	if (std::abs(u[2])> 1e-3) 
 		return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-	return Vec3f(-1, 1, 1); 
+	return Vec3f(-1, 1, 1); //return a negative coordinate
 }
 
 
@@ -122,7 +115,7 @@ void triangle(Device& device, mat<4, 3, float>& clipc, std::shared_ptr<IShader> 
 			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 			//通过zbuffer测试
 			if (device.getZbuffer(P.x, P.y) < frag_depth) {
-				device.getZbuffer(P.x, P.y) = frag_depth;
+				device.setZbuffer(P.x, P.y, frag_depth);
 				bool discard = shader->fragment(bc_clip, color);
 				if (!discard) {
 					device.device_pixel(P.x, P.y, color);

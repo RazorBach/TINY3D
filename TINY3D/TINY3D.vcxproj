@@ -113,7 +113,7 @@
   <ItemGroup>
     <ClInclude Include="device.h" />
     <ClInclude Include="model.h" />
-    <ClInclude Include="gl_stuff.h" />
+    <ClInclude Include="gl_shader.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="wd.h" />
@@ -123,7 +123,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
-    <ClCompile Include="gl_stuff.cpp" />
+    <ClCompile Include="gl_shader.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="wd.cpp" />
   </ItemGroup>
