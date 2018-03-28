@@ -3,25 +3,32 @@ A TINY3D RENDERER.
 
 ## Including
 
-- ​
-- Rasterization(barycentric coordinates)
+- 基本坐标变换
+- UVN相机模型
 
 
-- Back face culling
-- Camera(UVN)
+- 光栅化
 
+- 纹理(TGA格式)读取
 
-- 3D clipping(by CVV)
-- Z testing
-- Easy lighting
-- ​
+- 模型(obj格式)读取
 
+- 背面剔除
 
-- Vertex clipping
-- Vertex shading
-- ​
-- Texture sampler
-- Render to texture
-- Pixel shading
-- Alpha blending
-- Pixel output
+- Z-buffer测试
+
+- phong光照模型
+
+- 法线贴图
+
+- 硬阴影
+
+  ### continuing to do····
+
+- AO
+
+- 反锯齿
+
+- 双线性纹理滤波
+
+- mipmap加入

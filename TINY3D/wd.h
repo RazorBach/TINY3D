@@ -23,8 +23,6 @@ int screen_close();								// 关闭屏幕
 void screen_dispatch();							// 处理消息
 void screen_update();							// 显示 FrameBuffer
 
-void device_clear(int mwidth, int mheight, float* zbuffer);
-
 extern unsigned char *screen_fb;		// frame buffer
 
 #endif // !WD_H

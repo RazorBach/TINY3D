@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 #include <memory>
+#include <ctime>
 #include "model.h"
 #include "gl_shader.h"
 
@@ -63,13 +64,48 @@ void line(Device& device,float x1, float y1, float x2, float y2, const IUINT32 c
 	}
 }
 
+//struct Shader : public IShader {
+//	mat<4, 4, float> uniform_M;   //  Projection*ModelView
+//	mat<4, 4, float> uniform_MIT; // (Projection*ModelView).invert_transpose()
+//	mat<4, 4, float> uniform_Mshadow; // transform framebuffer screen coordinates to shadowbuffer screen coordinates
+//	mat<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
+//	mat<3, 3, float> varying_tri; // triangle coordinates before Viewport transform, written by VS, read by FS
+//
+//	Shader(std::shared_ptr<Model>& m,Matrix M, Matrix MIT, Matrix MS) :model(m), uniform_M(M), uniform_MIT(MIT), uniform_Mshadow(MS), varying_uv(), varying_tri() {}
+//
+//	virtual Vec4f vertex(int iface, int nthvert) {
+//		varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+//		Vec4f gl_Vertex = Viewport*Projection*ModelView*embed<4>(model->vert(iface, nthvert));
+//		varying_tri.set_col(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
+//		return gl_Vertex;
+//	}
+//
+//	virtual bool fragment(Vec3f bar, TGAColor &color) {
+//		Vec4f sb_p = uniform_Mshadow*embed<4>(varying_tri*bar); // corresponding point in the shadow buffer
+//		sb_p = sb_p / sb_p[3];
+//		int idx = int(sb_p[0]) + int(sb_p[1])*width; // index in the shadowbuffer array
+//		float shadow = .3 + .7*(shadowbuffer[idx]<sb_p[2]); // magic coeff to avoid z-fighting
+//		Vec2f uv = varying_uv*bar;                 // interpolate uv for the current pixel
+//		Vec3f n = proj<3>(uniform_MIT*embed<4>(model->normal(uv))).normalize(); // normal
+//		Vec3f l = proj<3>(uniform_M  *embed<4>(light_dir)).normalize(); // light vector
+//		Vec3f r = (n*(n*l*2.f) - l).normalize();   // reflected light
+//		float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
+//		float diff = std::max(0.f, n*l);
+//		TGAColor c = model->diffuse(uv);
+//		for (int i = 0; i<3; i++) color[i] = std::min<float>(20 + c[i] * shadow*(1.2*diff + .6*spec), 255);
+//		return false;
+//	}
+//private:
+//	std::shared_ptr<Model> model;
+//};
+
 struct GouraudShader : public IShader {
 	mat<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
 	mat<4, 3, float> varying_tri; // triangle coordinates (clip coordinates), written by VS, read by FS
 	mat<3, 3, float> varying_nrm; // normal per vertex to be interpolated by FS
 	mat<3, 3, float> ndc_tri;     // triangle in normalized device coordinates
 
-	GouraudShader(std::shared_ptr<Model> m):model(m) {};
+	GouraudShader(std::shared_ptr<Model>& m):model(m),varying_uv(),varying_tri(),varying_nrm(),ndc_tri() {};
 
 	virtual Vec4f vertex(int iface, int nthvert) {
 		varying_uv.set_col(nthvert, model->uv(iface, nthvert));
@@ -86,7 +122,7 @@ struct GouraudShader : public IShader {
 	virtual bool fragment(Vec3f bar, IUINT32 &color) {
 		Vec3f bn = (varying_nrm*bar).normalize();
 		Vec2f uv = varying_uv*bar;
-
+		
 		mat<3, 3, float> A;
 		A[0] = ndc_tri.col(1) - ndc_tri.col(0);
 		A[1] = ndc_tri.col(2) - ndc_tri.col(0);
@@ -96,17 +132,37 @@ struct GouraudShader : public IShader {
 		Vec3f i = AI * Vec3f(varying_uv[0][1] - varying_uv[0][0], varying_uv[0][2] - varying_uv[0][0], 0);
 		Vec3f j = AI * Vec3f(varying_uv[1][1] - varying_uv[1][0], varying_uv[1][2] - varying_uv[1][0], 0);
 
-		mat<3, 3, float> B;
+		mat<3, 3, float> B;                      //B为TBN矩阵的逆矩阵！
 		B.set_col(0, i.normalize());
 		B.set_col(1, j.normalize());
 		B.set_col(2, bn);
 
-		Vec3f n = (B*model->normal(uv)).normalize();
+		Vec3f n = (B*model->normal(uv)).normalize();  //换算到世界坐标下进行计算
+		//todo 把世界坐标换算到TBN矩阵空间 这样可以优化，减少fragment内矩阵计算次数！
 
 		float diff = std::max(0.f, n*light_dir);
 		color = (model->diffuse(uv)*diff).toColor32();
-		/*TGAColor tc = model->diffuse(uv)*diff;
-		color = _color(tc[2], tc[1], tc[0]);*/
+		return false;
+	}
+private:
+	std::shared_ptr<Model> model;
+};
+
+struct DepthShader : public IShader {
+	mat<3, 3, float> varying_tri;
+
+	DepthShader(std::shared_ptr<Model>& m) : varying_tri(),model(m) {}
+
+	virtual Vec4f vertex(int iface, int nthvert) {
+		Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
+		gl_Vertex = Viewport*Projection*ModelView*gl_Vertex;          // transform it to screen coordinates
+		varying_tri.set_col(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
+		return gl_Vertex;
+	}
+
+	virtual bool fragment(Vec3f bar, IUINT32 &color) {
+		Vec3f p = varying_tri*bar;
+		//color = TGAColor(255, 255, 255)*(p.z / depth);
 		return false;
 	}
 private:
@@ -129,6 +185,9 @@ void drawModelWithShader(std::shared_ptr<Model> model,Device& device) {
 	}
 }
 
+clock_t current_ticks, delta_ticks;
+clock_t fps = 0;
+
 int main(int argc, char **argv) {
 	//init windows
 	TCHAR *title = _T("TINY3D_BY_CH_VERSION_1.0 ");
@@ -144,27 +203,29 @@ int main(int argc, char **argv) {
 	int x = 0, y = 0;
 	//render function
 	while (SCREEN_EXIT == 0 && screen_keys[VK_ESCAPE] == 0) {
-		std::forward<Device>(device);
-		std::move(device);
+		current_ticks = clock();
 		screen_dispatch();
-		//todo 清空buffer
-		//device_clear(screen_width, screen_width, zbuffer);
+		//清空buffer
+		//device.device_clear(1);
 		//keyboard function
 		if (screen_keys[VK_RIGHT]) eye.x += 0.1f;
 		if (screen_keys[VK_LEFT]) eye.x -= 0.1f;
-		/*if (screen_keys[VK_UP]) pos -= 0.01f;
-		if (screen_keys[VK_DOWN]) pos += 0.01f;
-		if (screen_keys[VK_LEFT]) alpha += 0.01f;
-		if (screen_keys[VK_RIGHT]) alpha -= 0.01f;*/
+		if (screen_keys[VK_UP]) eye.y += 0.1f;
+		if (screen_keys[VK_DOWN])eye.y -= 0.1f;
 
 		if (screen_keys[VK_SPACE]) {
 		}
 		//line(device, 0.f, 0.f, 500.f, 500.f, red);
 		drawModelWithShader(model, device);
 		screen_update();
+		delta_ticks = clock() - current_ticks; //ms
+		if (delta_ticks > 0)
+			fps = CLOCKS_PER_SEC / delta_ticks;
+		cout << fps << endl;
 	}
 	return 0;
 }
+
 
 
 static LRESULT screen_events(HWND hWnd, UINT msg,

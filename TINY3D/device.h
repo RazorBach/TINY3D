@@ -48,7 +48,7 @@ struct Device {
 		max_v = 1.0f;
 		width = width;
 		height = height;
-		background = 0xc0c0c0;
+		background = 0;
 		foreground = 0;
 		//transform_init(&this->transform, width, height);
 		this->render_state = RENDER_STATE_WIREFRAME;
@@ -69,10 +69,13 @@ struct Device {
 		int y, x;
 		for (y = 0; y <height; y++) {
 			IUINT32 *dst = framebuffer[y];
-			IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
+			memset(dst, 0, sizeof(IUINT32) * width);
+			//IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
+			//cc = (cc << 16) | (cc << 8) | cc;
+			/*IUINT32 cc = 0;
 			cc = (cc << 16) | (cc << 8) | cc;
 			if (mode == 0) cc = background;
-			for (x = width; x > 0; dst++, x--) dst[0] = cc;
+			for (x = width; x > 0; dst++, x--) dst[0] = cc;*/
 		}
 		for (y = 0; y < height; y++) {
 			float *dst = zbuffer[y];
