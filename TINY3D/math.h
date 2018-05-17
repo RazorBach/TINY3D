@@ -5,9 +5,6 @@
 #include <cassert>
 #include <iostream>
 
-// 计算插值：t 为 [0, 1] 之间的数值
-template<class T, class U> inline T interp(T x1, T x2, U t) { return x1 + (x2 - x1) * t; }
-
 //matrix 
 template<size_t DimCols, size_t DimRows, typename T> class mat;
 
