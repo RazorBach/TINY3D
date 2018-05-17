@@ -1,11 +1,16 @@
+贬低(express a low opinion of)：
+belittle\decry\deprecate\disparage\derogate\detract(from)
 
-贬低：belittle\decry\deprecate\disparage\derogate\detract(from)||despise\scron\disdain\contempt
+轻视(regard as unworthy of one's notice or consideration)：
+despise\scron\disdain\contempt
+
+忽略，忽视(pass over without giving due attention):
+neglect, disregard, ignore, overlook, slight, forget
 
 多变的(tend to change): capricious\cavalier\fickle\flighty\erratic\impulsive\mercurial\variable\versatile\volatile
 
 模糊的(not clearly understandable)：
 obscure, dark, vague, enigmatic, cryptic, ambiguous, equivocal
-
 
 严厉的：austere\ascetic\astringent\severe\stern 
 
@@ -73,8 +78,5 @@ conquer, vanquish, defeat, subject, subdue, subjugate, reduce, overcome, overthr
 不服管的(not submissive to government or control):
 unruly, ungovernable, intractable, refractory, recalcitrant, willful, headstrong, restive
 
-批评，指责(find fault with openly):
-criticize, reprehend, censure, reprobate, condemn, denounce
-
-//归功于某人/某事，归咎于某人/某事(lay something to the account of a person or thing):
-//ascribe, attribute, assign, impute, credit 
+批评(criticize adversely):
+reprove, rebuke, reprimand, admonish, reproach, chide 
