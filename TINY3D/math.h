@@ -1,5 +1,5 @@
-#ifndef __GEOMETRY_H__
-#define __GEOMETRY_H__
+#ifndef __MATH_H__
+#define __MATH_H__
 #include <cmath>
 #include <vector>
 #include <cassert>
@@ -282,4 +282,4 @@ typedef vec<3, float> Vec3f;
 typedef vec<3, int>   Vec3i;
 typedef vec<4, float> Vec4f;
 typedef mat<4, 4, float> Matrix;
-#endif //__GEOMETRY_H__
+#endif //__MATH_H__

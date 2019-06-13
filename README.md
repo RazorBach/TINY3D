@@ -1,6 +1,12 @@
 # TINY3D
 A TINY3D RENDERER.
 
+![漫反射](https://github.com/ftdejo/TINY3D/blob/master/diffuse_map.png)
+
+![法向量](https://github.com/ftdejo/TINY3D/blob/master/normal_map.png)
+
+![phong光照模型](https://github.com/ftdejo/TINY3D/blob/master/phong_lighting.png)
+
 ## Including
 
 - 基本坐标变换
