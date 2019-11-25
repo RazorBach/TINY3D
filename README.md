@@ -9,32 +9,28 @@ A TINY3D RENDERER.
 
 ## Including
 
-- 基本坐标变换
-- UVN相机模型
+- Basic coordinate transformation
 
+- UVN camera model
 
-- 光栅化
+- Rasterization
 
-- 纹理(TGA格式)读取
+- Back culling
 
-- 模型(obj格式)读取
+- Z-buffer test
 
-- 背面剔除
+- Phong lighting model
 
-- Z-buffer测试
+- Normal map
 
-- phong光照模型
-
-- 法线贴图
-
-- 硬阴影
+- Hard shadow
 
   ### continuing to do····
 
 - AO
 
-- 反锯齿
+- Anti-aliasing
 
-- 双线性纹理滤波
+- Bilinear texture filtering
 
-- mipmap加入
+- mipmap
